@@ -76,11 +76,15 @@ html {
 }
 
 /* About section */
-.sidebar-about h1 {
+.sidebar-about{
+  top:0;
+}
+
+.sidebar-about h2 {
   color: #fff;
   margin-top: 0;
   font-family: "Abril Fatface", serif;
-  font-size: 3.25rem;
+  font-size: 40px;
 }
 
 /* Sidebar nav */
@@ -166,7 +170,10 @@ a.sidebar-nav-item:focus {
   }
 }
 
-
+/* Custom */
+.avatar {
+  border-top-left-radius: 50% 50%; border-top-right-radius: 50% 50%; border-bottom-right-radius: 50% 50%; border-bottom-left-radius: 50% 50%;margin: auto;display: block; width: 180px; height: 180px;
+}
 
 /*
  * Themes
