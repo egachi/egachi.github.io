@@ -1,6 +1,10 @@
 # Dependencies
 markdown:         kramdown
-highlighter:      Rouge
+highlighter:      rouge
+
+kramdown:
+  input: GFM
+  syntax_highlighter: rouge
 
 # Permalinks
 permalink:        pretty
@@ -10,7 +14,7 @@ relative_permalinks: false
 title:            "Learning OSS"
 tagline:          'Personal Blog'
 description:      '"Live as if you were to die tomorrow. Learn as if you were to live forever." <span style="font-size:18px">- Mahatma Gandhi <span/>'
-disclosure:       "All content expressed (my ideas and opinions) in this blog is written by me. I don't represent any company and the content doesn't have any warranty."
+disclosure:       "Opinions are my own and not the views of any company. Blog content/code doesn't have any warranty, please use as your own risk."
 url:              http://learningoss.com
 baseurl:          /
 

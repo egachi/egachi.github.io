@@ -299,9 +299,9 @@ tbody tr:nth-child(odd) th {
   border-bottom: solid 1px;
 }
 
-.disclosure{
-font-size: 10px;
-text-transform: uppercase;
+.disclosure {
+  font-size: 10px;
+  text-transform: uppercase;
 
 }
 
@@ -327,7 +327,7 @@ text-transform: uppercase;
  */
 
 .container {
-  max-width: 38rem;
+  max-width: 65rem;
   padding-left: 1rem;
   padding-right: 1rem;
   margin-left: auto;
@@ -371,6 +371,74 @@ text-transform: uppercase;
  * Each post is wrapped in `.post` and is used on default and post layouts. Each
  * page is wrapped in `.page` and is only used on the page layout.
  */
+
+@media (min-width: 800px) and (max-width: 1000px) {
+  .posts {
+    width: '100%';
+  }
+}
+
+@media (min-width: 1000px) and (max-width: 1200px) {
+  .posts {
+    width: '100%';
+  }
+}
+
+@media (min-width: 1300px) and (max-width: 1400px) {
+  .posts {
+    width: 800px;
+    padding-right:40px;
+  }
+}
+
+@media (min-width: 1400px) and (max-width: 1500px) {
+  .posts {
+    width: 900px;
+    padding-right:40px;
+  }
+}
+
+@media (min-width: 1500px) and (max-width: 1600px) {
+  .posts {
+    width: 1000px;
+    padding-right:40px;
+  }
+}
+
+@media (min-width: 1600px) and (max-width: 1700px) {
+  .posts {
+    width: 1100px;
+    padding-right:40px;
+  }
+}
+
+@media (min-width: 1700px) and (max-width: 1800px) {
+  .posts {
+    width: 1200px;
+    padding-right:40px;
+  }
+}
+
+@media (min-width: 1800px) and (max-width: 1900px) {
+  .posts {
+    width: 1300px;
+    padding-right:40px;
+  }
+}
+
+@media (min-width: 1900px) and (max-width: 2000px) {
+  .posts {
+    width: 1400px;
+    padding-right:40px;
+  }
+}
+
+@media (min-width: 2000px) and (max-width: 2100px) {
+  .posts {
+    width: 1500px;
+    padding-right:40px;
+  }
+}
 
 .page,
 .post {
