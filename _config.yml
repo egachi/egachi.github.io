@@ -30,6 +30,8 @@ version:          2.1.0
 github:
   repo:           https://github.com/egachi
 
+# Google Analytics
+google_analytics: G-WZL57VMGHB
 
 # Gems
 plugins:
@@ -46,7 +48,6 @@ exclude:
   - Gemfile.lock
   - LICENSE.md
   - README.md
-
 
 sass:
   sass_dir: _sass
