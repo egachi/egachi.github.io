@@ -376,16 +376,28 @@ tbody tr:nth-child(odd) th {
   .posts {
     width: '100%';
   }
+  .post {
+    width: '100%';
+  }
+
 }
 
 @media (min-width: 1000px) and (max-width: 1200px) {
   .posts {
     width: '100%';
   }
+  .post {
+    width: '100%';
+  }
+
 }
 
 @media (min-width: 1300px) and (max-width: 1400px) {
   .posts {
+    width: 800px;
+    padding-right:40px;
+  }
+  .post {
     width: 800px;
     padding-right:40px;
   }
@@ -396,10 +408,18 @@ tbody tr:nth-child(odd) th {
     width: 900px;
     padding-right:40px;
   }
+  .post {
+    width: 900px;
+    padding-right:40px;
+  }
 }
 
 @media (min-width: 1500px) and (max-width: 1600px) {
   .posts {
+    width: 1000px;
+    padding-right:40px;
+  }
+  .post {
     width: 1000px;
     padding-right:40px;
   }
@@ -410,10 +430,18 @@ tbody tr:nth-child(odd) th {
     width: 1100px;
     padding-right:40px;
   }
+  .post {
+    width: 1100px;
+    padding-right:40px;
+  }
 }
 
 @media (min-width: 1700px) and (max-width: 1800px) {
   .posts {
+    width: 1200px;
+    padding-right:40px;
+  }
+  .post {
     width: 1200px;
     padding-right:40px;
   }
@@ -424,6 +452,10 @@ tbody tr:nth-child(odd) th {
     width: 1300px;
     padding-right:40px;
   }
+  .post {
+    width: 1300px;
+    padding-right:40px;
+  }
 }
 
 @media (min-width: 1900px) and (max-width: 2000px) {
@@ -431,10 +463,18 @@ tbody tr:nth-child(odd) th {
     width: 1400px;
     padding-right:40px;
   }
+  .post {
+    width: 1400px;
+    padding-right:40px;
+  }
 }
 
 @media (min-width: 2000px) and (max-width: 2100px) {
   .posts {
+    width: 1500px;
+    padding-right:40px;
+  }
+  .post {
     width: 1500px;
     padding-right:40px;
   }
