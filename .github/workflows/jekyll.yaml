@@ -3,10 +3,10 @@ name: Build and Deploy Jekyll Site
 on:
   push:
     branches:
-      - master  # Trigger on pushes to the main branch
+      - dev  # Trigger on pushes to the main branch
   pull_request:
     branches:
-      - master  # Optional: Test PR builds
+      - dev  # Optional: Test PR builds
 
 permissions:
   id-token: write  # Required for OIDC authentication
