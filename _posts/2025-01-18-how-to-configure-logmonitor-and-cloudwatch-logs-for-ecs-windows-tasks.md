@@ -106,8 +106,7 @@ Follow these steps to configure Log Monitor and send IIS logs to CloudWatch:
             "awslogs-region": "us-east-1",
             "awslogs-stream-prefix": "ecs"
          }
-      },
-    //...more configurations
+      }
     ```
 6. **Rebuild and Deploy**
     - Rebuild the container image and push it to your ECR repository.
