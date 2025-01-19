@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="en-us">
+
+  <head>
+  <link href="http://gmpg.org/xfn/11" rel="profile">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+
+  <!-- Enable responsiveness on mobile devices-->
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+  <meta name="description" content="Learn Open Source Software everyday">
+  <meta name="keywords" content="OSS, open source, Open Source">
+
+  <title>
+    
+      How to Configure LogMonitor and CloudWatch Logs for ECS Windows Tasks &middot; Learning OSS
+    
+  </title>
+
+  <!-- CSS -->
+  <link rel="stylesheet" href="/public/css/poole.css">
+  <link rel="stylesheet" href="/public/css/hyde.css">
+  <link rel="stylesheet" href="/public/css/syntax_githublight.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=PT+Sans:400,400italic,700|Abril+Fatface">
+
+  <!-- Icons -->
+  <link rel="apple-touch-icon-precomposed" sizes="144x144" href="/public/apple-touch-icon-144-precomposed.png">
+                                 <link rel="shortcut icon" href="/public/favicon.ico">
+
+  <!-- RSS -->
+  <link rel="alternate" type="application/rss+xml" title="RSS" href="/atom.xml">
+
+  <!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-WZL57VMGHB"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'G-WZL57VMGHB');
+</script>
+  
+</head>
+
+
+  <body class="theme-base-0d">
+
+    <div class="sidebar">
+  <div class="container sidebar-sticky">
+    <div class="sidebar-about">
+      <img class="avatar" src="/public/images/profile.jpeg" />
+
+      <h2>
+        <a href="/">
+          Learning OSS
+        </a>
+      </h2>
+      <span class="author">Edison Garcia</span>
+      <p class="lead">
+        "Live as if you were to die tomorrow. Learn as if you were to live forever." <span style="font-size:18px">- Mahatma Gandhi <span/>
+      </p>
+    </div>
+
+    <nav class="sidebar-nav">
+      <a class="sidebar-nav-item" href="/">Home</a>
+
+      
+
+      
+      
+      
+      
+      
+      
+      
+      
+      <a class="sidebar-nav-item" href="/about/">About</a>
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+    </nav>
+
+    <p class="disclosure">
+      Opinions are my own and not the views of any company. Blog content/code doesn't have any warranty, please use as your own risk.
+    </p>
+
+    <p>&copy; 2025. All rights reserved.</p>
+  </div>
+</div>
+
+    <div class="content container">
+      <div class="post">
+  <h1 class="post-title">How to Configure LogMonitor and CloudWatch Logs for ECS Windows Tasks</h1>
+  <span class="post-date">18 Jan 2025</span>
+  <p>Windows applications often use different logging mechanisms than their Linux counterparts. Instead of relying on <code class="language-plaintext highlighter-rouge">STDOUT</code>, Windows apps typically utilize Windows-specific logging methods, such as <code class="language-plaintext highlighter-rouge">ETW</code>, the <code class="language-plaintext highlighter-rouge">Event Log</code>, or <code class="language-plaintext highlighter-rouge">custom log files</code> like <code class="language-plaintext highlighter-rouge">IIS logs</code>. If you’re running a Windows container in an ECS cluster and want to capture Windows and IIS logs in <code class="language-plaintext highlighter-rouge">CloudWatch</code>, you’ll need to implement <code class="language-plaintext highlighter-rouge">Log Monitor</code> instrumentation. This setup redirects IIS and system logs to <code class="language-plaintext highlighter-rouge">STDOUT</code>, allowing the awslogs driver to automatically capture and forward them to <code class="language-plaintext highlighter-rouge">CloudWatch</code> Logs.</p>
+
+<h2 id="setting-up-log-monitor-and-cloudwatch-for-iis-logs">Setting Up Log Monitor and CloudWatch for IIS Logs</h2>
+
+<p>Follow these steps to configure Log Monitor and send IIS logs to CloudWatch:</p>
+
+<ol>
+  <li>
+    <p><strong>Identify the Log Providers</strong>.</p>
+
+    <p>Determine the providers to include in the configuration file using:</p>
+
+    <p><code class="language-plaintext highlighter-rouge">logman query providers | findstr "&lt;GUID or Provider Name&gt;"</code></p>
+
+    <p>For IIS, you can use:</p>
+
+    <p><code class="language-plaintext highlighter-rouge">IIS: WWW Server</code> with GUID <code class="language-plaintext highlighter-rouge">3A2A4E84-4C21-4981-AE10-3FDA0D9B0F83</code></p>
+  </li>
+  <li>
+    <p><strong>Create the LogMonitorConfig.json file</strong>.</p>
+
+    <p>This file specifies which logs to capture. Below is an example configuration capturing system logs, application logs, and IIS logs:</p>
+
+    <div class="language-json highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="w"> </span><span class="p">{</span><span class="w">
+   </span><span class="nl">"LogConfig"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+     </span><span class="nl">"sources"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="w">
+       </span><span class="p">{</span><span class="w">
+         </span><span class="nl">"type"</span><span class="p">:</span><span class="w"> </span><span class="s2">"EventLog"</span><span class="p">,</span><span class="w">
+         </span><span class="nl">"startAtOldestRecord"</span><span class="p">:</span><span class="w"> </span><span class="kc">true</span><span class="p">,</span><span class="w">
+         </span><span class="nl">"eventFormatMultiLine"</span><span class="p">:</span><span class="w"> </span><span class="kc">false</span><span class="p">,</span><span class="w">
+         </span><span class="nl">"channels"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="w">
+           </span><span class="p">{</span><span class="w">
+             </span><span class="nl">"name"</span><span class="p">:</span><span class="w"> </span><span class="s2">"system"</span><span class="p">,</span><span class="w">
+             </span><span class="nl">"level"</span><span class="p">:</span><span class="w"> </span><span class="s2">"Information"</span><span class="w">
+           </span><span class="p">},</span><span class="w">
+           </span><span class="p">{</span><span class="w">
+             </span><span class="nl">"name"</span><span class="p">:</span><span class="w"> </span><span class="s2">"application"</span><span class="p">,</span><span class="w">
+             </span><span class="nl">"level"</span><span class="p">:</span><span class="w"> </span><span class="s2">"Error"</span><span class="w">
+           </span><span class="p">}</span><span class="w">
+         </span><span class="p">]</span><span class="w">
+       </span><span class="p">},</span><span class="w">
+       </span><span class="p">{</span><span class="w">
+         </span><span class="nl">"type"</span><span class="p">:</span><span class="w"> </span><span class="s2">"File"</span><span class="p">,</span><span class="w">
+         </span><span class="nl">"directory"</span><span class="p">:</span><span class="w"> </span><span class="s2">"c:</span><span class="se">\\</span><span class="s2">inetpub</span><span class="se">\\</span><span class="s2">logs"</span><span class="p">,</span><span class="w">
+         </span><span class="nl">"filter"</span><span class="p">:</span><span class="w"> </span><span class="s2">"*.log"</span><span class="p">,</span><span class="w">
+         </span><span class="nl">"includeSubdirectories"</span><span class="p">:</span><span class="w"> </span><span class="kc">true</span><span class="p">,</span><span class="w">
+         </span><span class="nl">"includeFileNames"</span><span class="p">:</span><span class="w"> </span><span class="kc">false</span><span class="w">
+       </span><span class="p">},</span><span class="w">
+       </span><span class="p">{</span><span class="w">
+         </span><span class="nl">"type"</span><span class="p">:</span><span class="w"> </span><span class="s2">"ETW"</span><span class="p">,</span><span class="w">
+         </span><span class="nl">"eventFormatMultiLine"</span><span class="p">:</span><span class="w"> </span><span class="kc">false</span><span class="p">,</span><span class="w">
+         </span><span class="nl">"providers"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="w">
+           </span><span class="p">{</span><span class="w">
+             </span><span class="nl">"providerName"</span><span class="p">:</span><span class="w"> </span><span class="s2">"IIS: WWW Server"</span><span class="p">,</span><span class="w">
+             </span><span class="nl">"providerGuid"</span><span class="p">:</span><span class="w"> </span><span class="s2">"3A2A4E84-4C21-4981-AE10-3FDA0D9B0F83"</span><span class="p">,</span><span class="w">
+             </span><span class="nl">"level"</span><span class="p">:</span><span class="w"> </span><span class="s2">"Information"</span><span class="w">
+           </span><span class="p">},</span><span class="w">
+           </span><span class="p">{</span><span class="w">
+             </span><span class="nl">"providerName"</span><span class="p">:</span><span class="w"> </span><span class="s2">"Microsoft-Windows-IIS-Logging"</span><span class="p">,</span><span class="w">
+             </span><span class="nl">"providerGuid"</span><span class="p">:</span><span class="w"> </span><span class="s2">"7E8AD27F-B271-4EA2-A783-A47BDE29143B"</span><span class="p">,</span><span class="w">
+             </span><span class="nl">"level"</span><span class="p">:</span><span class="w"> </span><span class="s2">"Information"</span><span class="w">
+           </span><span class="p">}</span><span class="w">
+         </span><span class="p">]</span><span class="w">
+       </span><span class="p">}</span><span class="w">
+     </span><span class="p">]</span><span class="w">
+   </span><span class="p">}</span><span class="w">
+ </span><span class="p">}</span><span class="w">
+</span></code></pre></div>    </div>
+  </li>
+  <li>
+    <p><strong>Download Log Monitor</strong></p>
+
+    <p>Download <a href="https://github.com/microsoft/windows-container-tools/releases">LogMonitor.exe</a> from the GitHub repository binaries.</p>
+  </li>
+  <li>
+    <p><strong>Update Your Dockerfile</strong></p>
+
+    <p>Integrate Log Monitor into your Docker container. Refer to the usage guide <a href="(https://github.com/microsoft/windows-container-tools/tree/main/LogMonitor#usage)">here</a>.</p>
+
+    <p>Example Dockerfile:</p>
+
+    <div class="language-docker highlighter-rouge"><div class="highlight"><pre class="highlight"><code> FROM mcr.microsoft.com/windows/servercore/iis:windowsservercore-ltsc2022
+
+ WORKDIR /LogMonitor
+
+ COPY LogMonitorConfig.json LogMonitor.exe ./
+
+ ENTRYPOINT ["C:\\LogMonitor\\LogMonitor.exe", "C:\\ServiceMonitor.exe", "w3svc"]
+</code></pre></div>    </div>
+  </li>
+  <li>
+    <p><strong>Configure CloudWatch Logs in the Task Definition</strong></p>
+
+    <p>Enable CloudWatch logs and set up the log driver in your ECS task definition:</p>
+
+    <p>Task definition example:</p>
+
+    <div class="language-json highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="w"> </span><span class="nl">"logConfiguration"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+     </span><span class="nl">"logDriver"</span><span class="p">:</span><span class="w"> </span><span class="s2">"awslogs"</span><span class="p">,</span><span class="w">
+       </span><span class="nl">"options"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+         </span><span class="nl">"awslogs-group"</span><span class="p">:</span><span class="w"> </span><span class="s2">"/ecs/iis-logs"</span><span class="p">,</span><span class="w">
+         </span><span class="nl">"awslogs-create-group"</span><span class="p">:</span><span class="w"> </span><span class="s2">"true"</span><span class="p">,</span><span class="w">
+         </span><span class="nl">"awslogs-region"</span><span class="p">:</span><span class="w"> </span><span class="s2">"us-east-1"</span><span class="p">,</span><span class="w">
+         </span><span class="nl">"awslogs-stream-prefix"</span><span class="p">:</span><span class="w"> </span><span class="s2">"ecs"</span><span class="w">
+      </span><span class="p">}</span><span class="w">
+   </span><span class="p">}</span><span class="w">
+</span></code></pre></div>    </div>
+  </li>
+  <li>
+    <p><strong>Rebuild and Deploy</strong></p>
+    <ul>
+      <li>Rebuild the container image and push it to your ECR repository.</li>
+      <li>Update the ECS task definition to use the new image and deploy it to the cluster.</li>
+    </ul>
+  </li>
+</ol>
+
+<h2 id="viewing-logs-in-cloudwatch">Viewing Logs in CloudWatch</h2>
+
+<ol>
+  <li>Open the <code class="language-plaintext highlighter-rouge">Amazon ECS console</code>.</li>
+  <li>Navigate to the cluster containing the task.</li>
+  <li>Select the <code class="language-plaintext highlighter-rouge">Tasks</code> tab and choose a task to view.</li>
+  <li>Expand the container details by clicking the arrow next to its name.</li>
+  <li>In the <code class="language-plaintext highlighter-rouge">Log Configuration section</code>, select <code class="language-plaintext highlighter-rouge">View logs in CloudWatch</code> to access the log stream.</li>
+</ol>
+
+<h3 id="example-outputs">Example Outputs</h3>
+
+<ul>
+  <li>
+    <p>ETW and Log Entries:</p>
+
+    <p><img src="/media/2025/01/iiscloudwatch-01.png" alt="cloudwatch" /></p>
+  </li>
+  <li>
+    <p>Application Exceptions:</p>
+
+    <p><img src="/media/2025/01/iiscloudwatch-02.png" alt="applicationerror" /></p>
+  </li>
+</ul>
+
+  <p>
+    Your donations are appreciated. Thank you!
+    <script type="text/javascript" src="https://cdnjs.buymeacoffee.com/1.0.0/button.prod.min.js" data-name="bmc-button"
+      data-slug="egachi" data-color="#FFDD00" data-emoji="☕" data-font="Cookie" data-text="Buy me a coffee"
+      data-outline-color="#000000" data-font-color="#000000" data-coffee-color="#ffffff"></script>
+  </p>
+</div>
+
+<div class="related">
+  <h2>Related Posts</h2>
+  <ul class="related-posts">
+    
+    <li>
+      <h3>
+        <a href="/2023/10/17/building-a-custom-api-gateway/">
+          Building a custom API Gateway with YARP
+          <small>17 Oct 2023</small>
+        </a>
+      </h3>
+    </li>
+    
+  </ul>
+</div>
+    </div>
+
+  </body>
+</html>

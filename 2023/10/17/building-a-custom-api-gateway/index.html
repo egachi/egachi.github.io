@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html lang="en-us">
+
+  <head>
+  <link href="http://gmpg.org/xfn/11" rel="profile">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+
+  <!-- Enable responsiveness on mobile devices-->
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+  <meta name="description" content="Learn Open Source Software everyday">
+  <meta name="keywords" content="OSS, open source, Open Source">
+
+  <title>
+    
+      Building a custom API Gateway with YARP &middot; Learning OSS
+    
+  </title>
+
+  <!-- CSS -->
+  <link rel="stylesheet" href="/public/css/poole.css">
+  <link rel="stylesheet" href="/public/css/hyde.css">
+  <link rel="stylesheet" href="/public/css/syntax_githublight.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=PT+Sans:400,400italic,700|Abril+Fatface">
+
+  <!-- Icons -->
+  <link rel="apple-touch-icon-precomposed" sizes="144x144" href="/public/apple-touch-icon-144-precomposed.png">
+                                 <link rel="shortcut icon" href="/public/favicon.ico">
+
+  <!-- RSS -->
+  <link rel="alternate" type="application/rss+xml" title="RSS" href="/atom.xml">
+
+  <!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-WZL57VMGHB"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'G-WZL57VMGHB');
+</script>
+  
+</head>
+
+
+  <body class="theme-base-0d">
+
+    <div class="sidebar">
+  <div class="container sidebar-sticky">
+    <div class="sidebar-about">
+      <img class="avatar" src="/public/images/profile.jpeg" />
+
+      <h2>
+        <a href="/">
+          Learning OSS
+        </a>
+      </h2>
+      <span class="author">Edison Garcia</span>
+      <p class="lead">
+        "Live as if you were to die tomorrow. Learn as if you were to live forever." <span style="font-size:18px">- Mahatma Gandhi <span/>
+      </p>
+    </div>
+
+    <nav class="sidebar-nav">
+      <a class="sidebar-nav-item" href="/">Home</a>
+
+      
+
+      
+      
+      
+      
+      
+      
+      
+      
+      <a class="sidebar-nav-item" href="/about/">About</a>
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+    </nav>
+
+    <p class="disclosure">
+      Opinions are my own and not the views of any company. Blog content/code doesn't have any warranty, please use as your own risk.
+    </p>
+
+    <p>&copy; 2025. All rights reserved.</p>
+  </div>
+</div>
+
+    <div class="content container">
+      <div class="post">
+  <h1 class="post-title">Building a custom API Gateway with YARP</h1>
+  <span class="post-date">17 Oct 2023</span>
+  <p>Whenever you are designing an architecture  with microservices, you might encounter in how to implement an <code class="language-plaintext highlighter-rouge">API Gateway</code>, since you need a way to communicate and consume multiple services, generally through APIs. A possible solution is to have a single entry point for all your clients and implement an <code class="language-plaintext highlighter-rouge">API Gateway</code>, which will handle all the requests and route those to appropiate microservices.</p>
+
+<p>There are different ways to implement an API Gateway or pay for built-in services in cloud hostings.</p>
+
+<p>In this post I will pick the easiest way that I found to create one for a microservice architecture using <code class="language-plaintext highlighter-rouge">.NET</code> and <code class="language-plaintext highlighter-rouge">YARP</code>. Here is a general overview of a microservice architecture.</p>
+
+<p><img src="/media/2023/10/api-gateway-architecture.png" alt="architecture" /></p>
+
+<h2 id="yarp">YARP</h2>
+
+<p><code class="language-plaintext highlighter-rouge">YARP</code> (which stands for “Yet Another Reverse Proxy”) is an open-source project that Microsoft built for improving routing through internal services using a built-in reverse proxy server. This become very popular and was implemented for several Azure products as <a href="https://azure.github.io/AppService/2022/08/16/A-Heavy-Lift.html">App Service</a>.</p>
+
+<ul>
+  <li>To get started, you need to create an ASP.NET core empty project. I chose .NET 7.0 for this post.</li>
+</ul>
+
+<figure class="highlight"><pre><code class="language-console" data-lang="console"><span class="go">dotnet new web -n ApiGateway -f net7.0</span></code></pre></figure>
+
+<ul>
+  <li>Install <a href="https://www.nuget.org/packages/Yarp.ReverseProxy/">YARP nuget package</a> or add the project reference <code class="language-plaintext highlighter-rouge">.csproj</code>.</li>
+</ul>
+
+<figure class="highlight"><pre><code class="language-microsoftshell" data-lang="microsoftshell"><span class="n">Install-Package</span><span class="w"> </span><span class="nx">Yarp.ReverseProxy</span></code></pre></figure>
+
+<figure class="highlight"><pre><code class="language-xml" data-lang="xml"><span class="nt">&lt;Project</span> <span class="na">Sdk=</span><span class="s">"Microsoft.NET.Sdk.Web"</span><span class="nt">&gt;</span>
+
+  <span class="nt">&lt;PropertyGroup&gt;</span>
+    <span class="nt">&lt;TargetFramework&gt;</span>net7.0<span class="nt">&lt;/TargetFramework&gt;</span>
+    <span class="nt">&lt;Nullable&gt;</span>enable<span class="nt">&lt;/Nullable&gt;</span>
+    <span class="nt">&lt;ImplicitUsings&gt;</span>enable<span class="nt">&lt;/ImplicitUsings&gt;</span>
+  <span class="nt">&lt;/PropertyGroup&gt;</span>
+
+  <span class="nt">&lt;ItemGroup&gt;</span>
+    <span class="nt">&lt;PackageReference</span> <span class="na">Include=</span><span class="s">"Yarp.ReverseProxy"</span> <span class="na">Version=</span><span class="s">"2.0.1"</span> <span class="nt">/&gt;</span>
+  <span class="nt">&lt;/ItemGroup&gt;</span>
+
+<span class="nt">&lt;/Project&gt;</span></code></pre></figure>
+
+<ul>
+  <li>Add the YARP middleware to your <code class="language-plaintext highlighter-rouge">Program.cs</code>.</li>
+</ul>
+
+<figure class="highlight"><pre><code class="language-csharp" data-lang="csharp"><span class="kt">var</span> <span class="n">builder</span> <span class="p">=</span> <span class="n">WebApplication</span><span class="p">.</span><span class="nf">CreateBuilder</span><span class="p">(</span><span class="n">args</span><span class="p">);</span>
+<span class="n">builder</span><span class="p">.</span><span class="n">Services</span><span class="p">.</span><span class="nf">AddReverseProxy</span><span class="p">()</span>
+    <span class="p">.</span><span class="nf">LoadFromConfig</span><span class="p">(</span><span class="n">builder</span><span class="p">.</span><span class="n">Configuration</span><span class="p">.</span><span class="nf">GetSection</span><span class="p">(</span><span class="s">"ReverseProxy"</span><span class="p">));</span>
+<span class="kt">var</span> <span class="n">app</span> <span class="p">=</span> <span class="n">builder</span><span class="p">.</span><span class="nf">Build</span><span class="p">();</span>
+<span class="n">app</span><span class="p">.</span><span class="nf">MapReverseProxy</span><span class="p">();</span>
+<span class="n">app</span><span class="p">.</span><span class="nf">Run</span><span class="p">();</span></code></pre></figure>
+
+<ul>
+  <li>
+    <p>To add the YARP configuration you will use <code class="language-plaintext highlighter-rouge">appsettings.json</code> file. YARP uses routes and clusters, regularilly inside <code class="language-plaintext highlighter-rouge">ReverseProxy</code> object defined in builder configuration section. You can find more information about different configuration settings <a href="https://github.com/microsoft/reverse-proxy/blob/main/docs/docfx/articles/config-files.md">here</a>.</p>
+  </li>
+  <li>
+    <p>In this example, I am using <code class="language-plaintext highlighter-rouge">Products</code> and <code class="language-plaintext highlighter-rouge">Employee</code> microservices. So I will have routes like <code class="language-plaintext highlighter-rouge">employee-route</code> and <code class="language-plaintext highlighter-rouge">product-route</code> and clusters as <code class="language-plaintext highlighter-rouge">product-cluster</code> and <code class="language-plaintext highlighter-rouge">employee-cluster</code> pointing to destinations. Open your <code class="language-plaintext highlighter-rouge">appsettings.json</code> and apply the following configuration.</p>
+  </li>
+</ul>
+
+<figure class="highlight"><pre><code class="language-json" data-lang="json"><span class="p">{</span><span class="w">
+  </span><span class="nl">"ReverseProxy"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+    </span><span class="nl">"Routes"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+      </span><span class="nl">"product-route"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+        </span><span class="nl">"ClusterId"</span><span class="p">:</span><span class="w"> </span><span class="s2">"product-cluster"</span><span class="p">,</span><span class="w">
+        </span><span class="nl">"Match"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+          </span><span class="nl">"Path"</span><span class="p">:</span><span class="w"> </span><span class="s2">"/p/{**catch-all}"</span><span class="p">,</span><span class="w">
+          </span><span class="nl">"Hosts"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="s2">"*"</span><span class="p">]</span><span class="w">
+        </span><span class="p">},</span><span class="w">
+        </span><span class="nl">"Transforms"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="w">
+          </span><span class="p">{</span><span class="w">
+            </span><span class="nl">"PathPattern"</span><span class="p">:</span><span class="w"> </span><span class="s2">"{**catch-all}"</span><span class="w">
+          </span><span class="p">}</span><span class="w">
+        </span><span class="p">]</span><span class="w">
+      </span><span class="p">},</span><span class="w">
+      </span><span class="nl">"employee-route"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+        </span><span class="nl">"ClusterId"</span><span class="p">:</span><span class="w"> </span><span class="s2">"employee-cluster"</span><span class="p">,</span><span class="w">
+        </span><span class="nl">"Match"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+          </span><span class="nl">"Path"</span><span class="p">:</span><span class="w"> </span><span class="s2">"/e/{**catch-all}"</span><span class="p">,</span><span class="w">
+          </span><span class="nl">"Hosts"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="s2">"*"</span><span class="p">]</span><span class="w">
+        </span><span class="p">},</span><span class="w">
+        </span><span class="nl">"Transforms"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="w">
+          </span><span class="p">{</span><span class="w">
+            </span><span class="nl">"PathPattern"</span><span class="p">:</span><span class="w"> </span><span class="s2">"{**catch-all}"</span><span class="w">
+          </span><span class="p">}</span><span class="w">
+        </span><span class="p">]</span><span class="w">
+      </span><span class="p">}</span><span class="w">
+    </span><span class="p">},</span><span class="w">
+    </span><span class="nl">"Clusters"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+      </span><span class="nl">"product-cluster"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+        </span><span class="nl">"Destinations"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+          </span><span class="nl">"destination1"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+            </span><span class="nl">"Address"</span><span class="p">:</span><span class="w"> </span><span class="s2">"http://localhost:3500/v1.0/invoke/product-api/method/"</span><span class="w">
+          </span><span class="p">}</span><span class="w">
+        </span><span class="p">}</span><span class="w">
+      </span><span class="p">},</span><span class="w">
+      </span><span class="nl">"employee-cluster"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+        </span><span class="nl">"Destinations"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+          </span><span class="nl">"destination1"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+            </span><span class="nl">"Address"</span><span class="p">:</span><span class="w"> </span><span class="s2">"http://localhost:3500/v1.0/invoke/employee-api/method/"</span><span class="w">
+          </span><span class="p">}</span><span class="w">
+        </span><span class="p">}</span><span class="w">
+      </span><span class="p">}</span><span class="w">
+    </span><span class="p">}</span><span class="w">
+  </span><span class="p">}</span><span class="w">
+</span><span class="p">}</span></code></pre></figure>
+
+<ul>
+  <li>In scenarios that you need to allow CORS to specific origins you can add a cors policy described in this <a href="https://learn.microsoft.com/en-us/aspnet/core/security/cors?view=aspnetcore-7.0">Microsoft Doc</a>. Here is a configuration example:</li>
+</ul>
+
+<figure class="highlight"><pre><code class="language-csharp" data-lang="csharp"><span class="kt">var</span> <span class="n">builder</span> <span class="p">=</span> <span class="n">WebApplication</span><span class="p">.</span><span class="nf">CreateBuilder</span><span class="p">(</span><span class="n">args</span><span class="p">);</span>
+<span class="kt">var</span> <span class="n">allowOrigins</span> <span class="p">=</span> <span class="s">"_allowOrigins"</span><span class="p">;</span>
+<span class="n">builder</span><span class="p">.</span><span class="n">Services</span><span class="p">.</span><span class="nf">AddCors</span><span class="p">(</span><span class="n">options</span> <span class="p">=&gt;</span>
+<span class="p">{</span>
+    <span class="n">options</span><span class="p">.</span><span class="nf">AddPolicy</span><span class="p">(</span><span class="n">allowOrigins</span><span class="p">,</span> <span class="n">policy</span> <span class="p">=&gt;</span>
+    <span class="p">{</span>
+        <span class="n">policy</span>
+          <span class="p">.</span><span class="nf">WithOrigins</span><span class="p">(</span><span class="s">"http://localhost:3000"</span><span class="p">,</span> <span class="s">"http://127.0.0.1"</span><span class="p">)</span>
+          <span class="p">.</span><span class="nf">SetIsOriginAllowedToAllowWildcardSubdomains</span><span class="p">()</span>
+          <span class="p">.</span><span class="nf">AllowAnyHeader</span><span class="p">()</span>
+          <span class="p">.</span><span class="nf">WithMethods</span><span class="p">(</span><span class="s">"GET"</span><span class="p">,</span> <span class="s">"POST"</span><span class="p">,</span> <span class="s">"PUT"</span><span class="p">,</span> <span class="s">"DELETE"</span><span class="p">)</span>
+          <span class="p">.</span><span class="nf">AllowCredentials</span><span class="p">();</span>
+    <span class="p">});</span>
+<span class="p">});</span>
+<span class="kt">var</span> <span class="n">app</span> <span class="p">=</span> <span class="n">builder</span><span class="p">.</span><span class="nf">Build</span><span class="p">();</span>
+<span class="n">app</span><span class="p">.</span><span class="nf">UseCors</span><span class="p">(</span><span class="n">allowOrigins</span><span class="p">);</span></code></pre></figure>
+
+<ul>
+  <li>Then add this CORs policy inside <code class="language-plaintext highlighter-rouge">Routes</code> as followed:</li>
+</ul>
+
+<figure class="highlight"><pre><code class="language-json" data-lang="json"><span class="nl">"Routes"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+      </span><span class="nl">"product-route"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+        </span><span class="nl">"ClusterId"</span><span class="p">:</span><span class="w"> </span><span class="s2">"product-cluster"</span><span class="p">,</span><span class="w">
+        </span><span class="nl">"CorsPolicy"</span><span class="p">:</span><span class="w"> </span><span class="s2">"_allowOrigins"</span><span class="p">,</span><span class="w">
+        </span><span class="nl">"Match"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="s2">"..."</span><span class="w"> </span><span class="p">},</span><span class="w">
+        </span><span class="nl">"Transforms"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="w"> </span><span class="s2">"..."</span><span class="p">]</span><span class="w">
+      </span><span class="p">},</span><span class="w">
+</span><span class="p">}</span></code></pre></figure>
+
+<ul>
+  <li>Finally if you want to get more information about YARP logging for future debugging or production information, you can add the YARP log level (<code class="language-plaintext highlighter-rouge">Information</code>,<code class="language-plaintext highlighter-rouge">Warning</code> or <code class="language-plaintext highlighter-rouge">Error</code>) inside <code class="language-plaintext highlighter-rouge">Logging</code> object as followed:</li>
+</ul>
+
+<figure class="highlight"><pre><code class="language-json" data-lang="json"><span class="w">  </span><span class="nl">"Logging"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+    </span><span class="nl">"LogLevel"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+      </span><span class="nl">"Default"</span><span class="p">:</span><span class="w"> </span><span class="s2">"Information"</span><span class="p">,</span><span class="w">
+      </span><span class="nl">"Yarp"</span><span class="p">:</span><span class="w"> </span><span class="s2">"Information"</span><span class="p">,</span><span class="w">
+      </span><span class="nl">"Microsoft.AspNetCore"</span><span class="p">:</span><span class="w"> </span><span class="s2">"Warning"</span><span class="w">
+    </span><span class="p">}</span><span class="w">
+  </span><span class="p">}</span></code></pre></figure>
+
+<ul>
+  <li>Run the application with <code class="language-plaintext highlighter-rouge">dotnet run</code> and use Postman or curl to test the endpoints defined in your paths e.g. <code class="language-plaintext highlighter-rouge">http://localhost:5212/p/v1/</code>.
+    <blockquote>
+      <p>Check all possible configurations and transformations in the <a href="https://github.com/microsoft/reverse-proxy/blob/main/docs/docfx/articles/config-files.md">YARP documentation</a>.</p>
+    </blockquote>
+  </li>
+</ul>
+
+  <p>
+    Your donations are appreciated. Thank you!
+    <script type="text/javascript" src="https://cdnjs.buymeacoffee.com/1.0.0/button.prod.min.js" data-name="bmc-button"
+      data-slug="egachi" data-color="#FFDD00" data-emoji="☕" data-font="Cookie" data-text="Buy me a coffee"
+      data-outline-color="#000000" data-font-color="#000000" data-coffee-color="#ffffff"></script>
+  </p>
+</div>
+
+<div class="related">
+  <h2>Related Posts</h2>
+  <ul class="related-posts">
+    
+    <li>
+      <h3>
+        <a href="/2025/01/18/how-to-configure-logmonitor-and-cloudwatch-logs-for-ecs-windows-tasks/">
+          How to Configure LogMonitor and CloudWatch Logs for ECS Windows Tasks
+          <small>18 Jan 2025</small>
+        </a>
+      </h3>
+    </li>
+    
+  </ul>
+</div>
+    </div>
+
+  </body>
+</html>
