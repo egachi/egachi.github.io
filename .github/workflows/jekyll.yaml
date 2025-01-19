@@ -3,10 +3,10 @@ name: Build and Deploy Jekyll Site
 on:
   push:
     branches:
-      - main  # Trigger on pushes to the main branch
+      - master  # Trigger on pushes to the main branch
   pull_request:
     branches:
-      - main  # Optional: Test PR builds
+      - master  # Optional: Test PR builds
 
 jobs:
   # Build job
