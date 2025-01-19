@@ -8,6 +8,10 @@ on:
     branches:
       - master  # Optional: Test PR builds
 
+permissions:
+  id-token: write  # Required for OIDC authentication
+  contents: read  # Required to read repository contents
+
 jobs:
   # Build job
   build:
@@ -19,8 +23,8 @@ jobs:
       - name: Setup Ruby
         uses: ruby/setup-ruby@v1
         with:
-          ruby-version: 3.2.3  # Specify your Ruby version
-          bundler-cache: true  # Cache gems for faster builds
+          ruby-version: 3.2.3
+          bundler-cache: true
 
       - name: Install Dependencies
         run: |
