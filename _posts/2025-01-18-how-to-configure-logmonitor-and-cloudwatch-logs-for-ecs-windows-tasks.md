@@ -81,7 +81,7 @@ Follow these steps to configure Log Monitor and send IIS logs to CloudWatch:
 
     Example Dockerfile:
 
-    ```docker
+    ```bash
     FROM mcr.microsoft.com/windows/servercore/iis:windowsservercore-ltsc2022
 
     WORKDIR /LogMonitor
