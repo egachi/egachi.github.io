@@ -8,56 +8,56 @@ To effectively reduce the number of Daemonset pods to 0 without deleting the Dae
 
 1. Add a label to all existing nodes. In this example I will use "fluent-bit=false" to control how many FluentBit Daemonset pods will be running in my nodes. To add a label use this command:
 
-  `kubectl get nodes -o name | xargs -I{} kubectl label {} fluent-bit=false --overwrite`
+    `kubectl get nodes -o name | xargs -I{} kubectl label {} fluent-bit=false --overwrite`
 
-  **Note**: You may need to rerun this command if new nodes are added to the cluster.
+    **Note**: You may need to rerun this command if new nodes are added to the cluster.
 
 2. Verify the label change:
    
-  `kubectl get nodes --show-labels`
+    `kubectl get nodes --show-labels`
 
 3. Modify your DaemonSet manifest adding a new selector:
 
-  ```yaml
-  nodeSelector:
-  kubernetes.io/os: linux
-  fluent-bit: "true"
-  ```
+    ```yaml
+    nodeSelector:
+    kubernetes.io/os: linux
+    fluent-bit: "true"
+    ```
 
-  For example:
+    For example:
 
-  ```yaml
-  apiVersion: apps/v1
-  kind: DaemonSet
-  metadata:
-    name: fluent-bit
-    namespace: amazon-cloudwatch
-    labels:
-      k8s-app: fluent-bit
-      version: v1
-      kubernetes.io/cluster-service: "true"
-  spec:
-    selector:
-      matchLabels:
+    ```yaml
+    apiVersion: apps/v1
+    kind: DaemonSet
+    metadata:
+      name: fluent-bit
+      namespace: amazon-cloudwatch
+      labels:
         k8s-app: fluent-bit
-    template:
-      metadata:
-        labels:
+        version: v1
+        kubernetes.io/cluster-service: "true"
+    spec:
+      selector:
+        matchLabels:
           k8s-app: fluent-bit
-          version: v1
-          kubernetes.io/cluster-service: "true"
-      spec:
-        containers:
-          - name: fluent-bit
-            image: public.ecr.aws/aws-observability/aws-for-fluent-bit:2.32.4
-            imagePullPolicy: Always
-        nodeSelector:
-          kubernetes.io/os: linux
-          fluent-bit: "true"
-  ```
+      template:
+        metadata:
+          labels:
+            k8s-app: fluent-bit
+            version: v1
+            kubernetes.io/cluster-service: "true"
+        spec:
+          containers:
+            - name: fluent-bit
+              image: public.ecr.aws/aws-observability/aws-for-fluent-bit:2.32.4
+              imagePullPolicy: Always
+          nodeSelector:
+            kubernetes.io/os: linux
+            fluent-bit: "true"
+    ```
 4. Apply the updated configuration: 
     
-  `kubectl apply -f <manifest-name>.yaml`
+    `kubectl apply -f <manifest-name>.yaml`
 
 5. Verify that your Daemonset pods are not running.
 6. To re-enable Daemonset pods in the future, you can update the node labels to a desired label and value. e.g. "fluent-bit=true":
