@@ -3,7 +3,7 @@ layout: post
 title: How to Configure LogMonitor and CloudWatch Logs for ECS Windows Tasks
 ---
 
-Windows applications often use different logging mechanisms than their Linux counterparts. Instead of relying on `STDOUT`, Windows apps typically utilize Windows-specific logging methods, such as `ETW`, the `Event Log`, or `custom log files` like `IIS logs`. If you’re running a Windows container in an ECS cluster and want to capture Windows and IIS logs in `CloudWatch`, you’ll need to implement `Log Monitor` instrumentation. This setup redirects IIS and system logs to `STDOUT`, allowing the awslogs driver to automatically capture and forward them to `CloudWatch` Logs.
+Windows applications often use different logging mechanisms than their Linux counterparts. Instead of relying on `STDOUT`, Windows apps typically utilize Windows-specific logging methods, such as `ETW`, the `Event Log`, or `custom log files` like `IIS logs`. If you're running a Windows container in an ECS cluster and want to capture Windows and IIS logs in `CloudWatch`, you'll need to implement `Log Monitor` instrumentation. This setup redirects IIS and system logs to `STDOUT`, allowing the awslogs driver to automatically capture and forward them to `CloudWatch` Logs.
 
 
 ## Setting Up Log Monitor and CloudWatch for IIS Logs
